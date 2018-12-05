@@ -1,23 +1,23 @@
 #include "MorphableOperators.h"
 #include <stdlib.h>
 
-Image_t* erosion(Image_t* input, StructElem* structElem){
+Image_t* MorphableOperator::erosion(Image_t* input, StructElem* structElem){
     return process(input, structElem, EROSION);
 }
 
-Image_t* dilatation(Image_t* input, StructElem* structElem){
+Image_t* MorphableOperator::dilatation(Image_t* input, StructElem* structElem){
     return process(input, structElem, DILATATION);
 }
 
-Image_t* opening(Image_t* input, StructElem* structElem){ // EROSION then DILATATION
+Image_t* MorphableOperator::opening(Image_t* input, StructElem* structElem){ // EROSION then DILATATION
     return process(process(input, structElem, EROSION), structElem, DILATATION);
 }
 
-Image_t* closing(Image_t* input, StructElem* structElem) { // DILATATION then EROSION
+Image_t* MorphableOperator::closing(Image_t* input, StructElem* structElem) { // DILATATION then EROSION
     return process(process(input, structElem, DILATATION), structElem, EROSION);
 }
 
-Image_t * top_hat(Image_t* input, StructElem* structElem){ // ORIGINAL - OPENED
+Image_t * MorphableOperator::top_hat(Image_t* input, StructElem* structElem){ // ORIGINAL - OPENED
     Image_t* opened = opening(input, structElem);
     float* output = (float*)malloc(input->width * input->height * sizeof(float));
     for(long i = 0; i < input->width * input->height; i+=1){
@@ -26,7 +26,7 @@ Image_t * top_hat(Image_t* input, StructElem* structElem){ // ORIGINAL - OPENED
     return Image_new(input->width, input->height, 1, output);
 }
 
-Image_t * bottom_hat(Image_t* input, StructElem* structElem){ // CLOSED - ORIGINAL
+Image_t * MorphableOperator::bottom_hat(Image_t* input, StructElem* structElem){ // CLOSED - ORIGINAL
     Image_t* closed = closing(input, structElem);
     float* output = (float*)malloc(input->width * input->height * sizeof(float));
     for(long i = 0; i < input->width * input->height; i+=1){
@@ -35,7 +35,7 @@ Image_t * bottom_hat(Image_t* input, StructElem* structElem){ // CLOSED - ORIGIN
     return Image_new(input->width, input->height, 1, output);
 }
 
-Image_t* process(Image_t *input_img, StructElem *elem, int operation){ //float (*operation)(float*, int) ){
+Image_t* MorphableOperator::process(Image_t *input_img, StructElem *elem, int operation){ //float (*operation)(float*, int) ){
 
     // Assumes that input_img->data is a NxM float matrix with values 0 or 1
     // OPERATION: 1 if erosion, 0 if dilatation

@@ -6,31 +6,25 @@
 #include <chrono>
 #include <iostream>
 #include <fstream>
+#include <vector>
 #include "Image.h"
 #include "PPM.h"
 #include "MorphableOperators.h"
 
-/*
- * Sperimentare con dimensioni diverse delle immagini.
- *
- * CUDA
- * Fissata una scheda video, giocare sul numero dei blocchi.
- * */
-
-// TODO: implement for-each instead of for
-
 int main() {
 
-    const char *filename[4] = {"logitech_bill_clinton_bin.ppm", "micropro_wordstar_bin.ppm", "apple_adam_bin.ppm",
-                               "two_bytes_better_bin.ppm"};
-    double times[4 * 6];
+    std::vector<const char> filename[4] = {"logitech_bill_clinton_bin.ppm",
+                                           "micropro_wordstar_bin.ppm",
+                                           "apple_adam_bin.ppm",
+                                            "two_bytes_better_bin.ppm"};
+    double times[filename->size() * 6];
     int times_index = 0;
     Image_t *input_img, *img, *out;
     std::string name;
     std::chrono::high_resolution_clock::time_point t_start, t_end;
     std::chrono::duration<double> time_span;
 
-    for(int i = 0; i < 4; i+=1){
+    for(int i = 0; i < filename->size(); i+=1){
         input_img = PPM_import(filename[i]);
         printf("\nLoaded %s (%dx%d) \n", filename[i], input_img->width, input_img->height);
 
@@ -49,12 +43,12 @@ int main() {
             }
         }
 
-        Image_t *img = Image_new(input_img->width, input_img->height, 1, input);
+        img = Image_new(input_img->width, input_img->height, 1, input);
 
 
         // EROSION
         t_start = std::chrono::high_resolution_clock::now();
-        out = erosion(img, se);
+        out = MorphableOperator::erosion(img, se);
         t_end = std::chrono::high_resolution_clock::now();
 
         name = filename[i];
@@ -68,7 +62,7 @@ int main() {
         // DILATATION
 
         t_start = std::chrono::high_resolution_clock::now();
-        out = erosion(img, se);
+        out = MorphableOperator::dilatation(img, se);
         t_end = std::chrono::high_resolution_clock::now();
 
         name = filename[i];
@@ -82,7 +76,7 @@ int main() {
         // CLOSING
 
         t_start = std::chrono::high_resolution_clock::now();
-        out = closing(img, se);
+        out = MorphableOperator::closing(img, se);
         t_end = std::chrono::high_resolution_clock::now();
 
         name = filename[i];
@@ -96,7 +90,7 @@ int main() {
         // OPENING
 
         t_start = std::chrono::high_resolution_clock::now();
-        out = opening(img, se);
+        out = MorphableOperator::opening(img, se);
         t_end = std::chrono::high_resolution_clock::now();
 
         name = filename[i];
@@ -110,7 +104,7 @@ int main() {
         // TOP HAT
 
         t_start = std::chrono::high_resolution_clock::now();
-        out = top_hat(img, se);
+        out = MorphableOperator::top_hat(img, se);
         t_end = std::chrono::high_resolution_clock::now();
 
         name = filename[i];
@@ -124,7 +118,7 @@ int main() {
         // BOTTOM HAT
 
         t_start = std::chrono::high_resolution_clock::now();
-        out = bottom_hat(img, se);
+        out = MorphableOperator::bottom_hat(img, se);
         t_end = std::chrono::high_resolution_clock::now();
 
         name = filename[i];
@@ -152,7 +146,7 @@ int main() {
     int k = 0;
 
     myfile.open ("Timings.csv");
-    for(int i = 0; i < 4; i++){
+    for(int i = 0; i < filename->size(); i++){
         myfile << filename[i] << "\n";
         myfile << "EROSION;" << times[k++] << "\n";
         myfile << "DILATATION;" << times[k++] << "\n";
