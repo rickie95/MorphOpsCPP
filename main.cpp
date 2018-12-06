@@ -1,10 +1,7 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <string>
-#include <sstream>
+#include <cstdlib>
+#include <cstdio>
 #include <cstdio>
 #include <chrono>
-#include <iostream>
 #include <fstream>
 #include <vector>
 #include "Image.h"
@@ -13,10 +10,12 @@
 
 int main() {
 
-    std::vector<const char> filename[4] = {"logitech_bill_clinton_bin.ppm",
-                                           "micropro_wordstar_bin.ppm",
-                                           "apple_adam_bin.ppm",
-                                            "two_bytes_better_bin.ppm"};
+    std::vector<std::string> *filename = new std::vector<std::string>();
+    filename->push_back("logitech_bill_clinton_bin.ppm");
+    filename->push_back("micropro_wordstar_bin.ppm");
+    filename->push_back("apple_adam_bin.ppm");
+    filename->push_back("two_bytes_better_bin.ppm");
+
     double times[filename->size() * 6];
     int times_index = 0;
     Image_t *input_img, *img, *out;
@@ -24,9 +23,9 @@ int main() {
     std::chrono::high_resolution_clock::time_point t_start, t_end;
     std::chrono::duration<double> time_span;
 
-    for(int i = 0; i < filename->size(); i+=1){
-        input_img = PPM_import(filename[i]);
-        printf("\nLoaded %s (%dx%d) \n", filename[i], input_img->width, input_img->height);
+    for(auto file = filename->begin(); file != filename->end(); ++file){
+        input_img = PPM_import(file->c_str());
+        printf("\nLoaded %s (%dx%d) \n", file->c_str(), input_img->width, input_img->height);
 
         // 0.0 -> BLACK ; 1.0 -> WHITE
 
@@ -51,8 +50,7 @@ int main() {
         out = MorphableOperator::erosion(img, se);
         t_end = std::chrono::high_resolution_clock::now();
 
-        name = filename[i];
-        PPM_export((name + "_eroded.ppm").c_str(), out);
+        PPM_export((*file + "_eroded.ppm").c_str(), out);
 
         time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t_end - t_start);
         times[times_index++] = time_span.count();
@@ -65,8 +63,7 @@ int main() {
         out = MorphableOperator::dilatation(img, se);
         t_end = std::chrono::high_resolution_clock::now();
 
-        name = filename[i];
-        PPM_export((name + "_dilatated.ppm").c_str(), out);
+        PPM_export((*file + "_dilatated.ppm").c_str(), out);
 
         time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t_end - t_start);
         times[times_index++] = time_span.count();
@@ -79,8 +76,7 @@ int main() {
         out = MorphableOperator::closing(img, se);
         t_end = std::chrono::high_resolution_clock::now();
 
-        name = filename[i];
-        PPM_export((name + "_closed.ppm").c_str(), out);
+        PPM_export((*file + "_closed.ppm").c_str(), out);
 
         time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t_end - t_start);
         times[times_index++] = time_span.count();
@@ -93,8 +89,7 @@ int main() {
         out = MorphableOperator::opening(img, se);
         t_end = std::chrono::high_resolution_clock::now();
 
-        name = filename[i];
-        PPM_export((name + "_opened.ppm").c_str(), out);
+        PPM_export((*file + "_opened.ppm").c_str(), out);
 
         time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t_end - t_start);
         times[times_index++] = time_span.count();
@@ -107,8 +102,7 @@ int main() {
         out = MorphableOperator::top_hat(img, se);
         t_end = std::chrono::high_resolution_clock::now();
 
-        name = filename[i];
-        PPM_export((name + "_topHat.ppm").c_str(), out);
+        PPM_export((*file + "_topHat.ppm").c_str(), out);
 
         time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t_end - t_start);
         times[times_index++] = time_span.count();
@@ -121,8 +115,7 @@ int main() {
         out = MorphableOperator::bottom_hat(img, se);
         t_end = std::chrono::high_resolution_clock::now();
 
-        name = filename[i];
-        PPM_export((name + "_bottomHat.ppm").c_str(), out);
+        PPM_export((*file + "_bottomHat.ppm").c_str(), out);
 
         time_span = std::chrono::duration_cast<std::chrono::duration<double>>(t_end - t_start);
         times[times_index++] = time_span.count();
@@ -146,8 +139,8 @@ int main() {
     int k = 0;
 
     myfile.open ("Timings.csv");
-    for(int i = 0; i < filename->size(); i++){
-        myfile << filename[i] << "\n";
+    for(auto file = filename->begin(); file != filename->end(); ++file){
+        myfile << file->c_str() << "\n";
         myfile << "EROSION;" << times[k++] << "\n";
         myfile << "DILATATION;" << times[k++] << "\n";
         myfile << "CLOSING;" << times[k++] << "\n";

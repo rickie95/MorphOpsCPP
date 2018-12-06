@@ -1,5 +1,5 @@
 #include "MorphableOperators.h"
-#include <stdlib.h>
+#include <cstdlib>
 
 Image_t* MorphableOperator::erosion(Image_t* input, StructElem* structElem){
     return process(input, structElem, EROSION);
@@ -56,30 +56,25 @@ Image_t* MorphableOperator::process(Image_t *input_img, StructElem *elem, int op
 
     for (int row = 0; row < input_img->height; row += 1) {
         for (int col = 0; col < input_img->width; col += 1) {
-            if (input[(row * input_img->width + col)] == complOpt(operation)) {
-                // Extract neighborhood using mask as reference
-                int k = 0;
-                float neighborhood[elem_H * elem_W]; // at least all the mask
-                for (int i = 0; i < elem_H; i += 1) {
-                    for (int j = 0; j < elem_W; j += 1) {
-                        int x = (row + i - elem_RX);
-                        int y = (col + j - elem_RY);
-                        if (x > -1 && x < input_img->height && y > -1 && y < input_img->width &&
-                            struc_elem[i * elem_W + j] > 0) {
-                            neighborhood[k] = input[x * input_img->width + y];
-                            k += 1;
-                        }
+            // Extract neighborhood using mask as reference
+            int k = 0;
+            float neighborhood[elem_H * elem_W]; // at least all the mask
+            for (int i = 0; i < elem_H; i += 1) {
+                for (int j = 0; j < elem_W; j += 1) {
+                    int x = (row + i - elem_RX);
+                    int y = (col + j - elem_RY);
+                    if (x > -1 && x < input_img->height && y > -1 && y < input_img->width &&
+                        struc_elem[i * elem_W + j] > 0) {
+                        neighborhood[k] = input[x * input_img->width + y];
+                        k += 1;
                     }
                 }
-                if (operation == EROSION) // EROSION
-                    output[row * input_img->width + col] = max_ar(neighborhood, k);
-
-                if (operation == DILATATION) // DILATATION
-                    output[row * input_img->width + col] = min_ar(neighborhood, k);
-
-            }else {
-                output[row * input_img->width + col] = operation;
             }
+            if (operation == EROSION) // EROSION
+                output[row * input_img->width + col] = max_ar(neighborhood, k);
+
+            if (operation == DILATATION) // DILATATION
+                output[row * input_img->width + col] = min_ar(neighborhood, k);
         }
     }
     return Image_new(input_img->width, input_img->height, 1, output);
